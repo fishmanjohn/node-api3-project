@@ -5,9 +5,11 @@ const router = express.Router();
 
 router.post('/',validateUser, (req, res) => {
   // do your magic!
-  console.log(req.body)
+  console.log(`HEY! ${req.body}`)
 userDb.insert(req.body)
-.then(res=>{console.log(res)})
+.then(user=>{console.log(user)
+res.status(200).json(user)
+})
 .catch(err=>{console.log(err)
   res.status(500).json({error: "There was an error while saving the post to the database"})
   })
@@ -16,8 +18,15 @@ userDb.insert(req.body)
 router.post('/:id/posts',validateUserId,validatePost, (req, res) => {
   // do your magic!
   console.log(req.body)
-  postDb.insert(req.body)
-  .then(res=>{console.log(res)})
+  console.log(req.params.id)
+  const text = req.body
+  const user_id = req.params.id 
+  const submit = {...text,user_id}
+  console.log(submit)
+  postDb.insert(submit)
+  .then(post=>{console.log(post)
+  res.status(200).json(post)
+  })
   .catch(err=>{console.log(err)
     res.status(500).json({error: "There was an error while saving the post to the database"})
     })
@@ -53,6 +62,16 @@ router.get('/:id/posts', validateUserId,(req, res) => {
 postDb.getById(id)
 .then(posts=>{
   res.status(200).json(posts)})
+.catch(err=>{console.log(err)
+  res.status(500).json({error: "There was an error while saving the post to the database"})
+  })
+});
+
+router.get('/:id/userposts', validateUserId,(req,res)=>{
+  id = req.params.id
+userDb.getUserPosts(id)
+.then(user=>{
+  res.status(200).json(user)})
 .catch(err=>{console.log(err)
   res.status(500).json({error: "There was an error while saving the post to the database"})
   })
@@ -110,8 +129,8 @@ function validateUserId(req, res, next) {
 
 function validateUser(req, res, next) {
   // do your magic!
- userData = req.body
- if(!userData.name){
+  console.log(req)
+ if(!req.body.name){
    res.status(400).json({message: "missing required name field"})
  }else{
    next();
@@ -122,7 +141,7 @@ function validatePost(req, res, next) {
   // do your magic!
 postData = req.body
 if(!postData.text){
-  res.status(400).json({message: "missing required name field"})
+  res.status(400).json({message: "missing required text field"})
 }else{
   next();
 }
